@@ -1,6 +1,6 @@
 {
   "name": "@ayte/nullables",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Utility functions for working with nullable values",
   "main": "distribution/index.js",
   "repository": "git@github.com:ayte-io/ts-nullables.git",
@@ -8,7 +8,7 @@
   "license": "(MIT OR UPL-1.0)",
   "private": false,
   "files": [
-    "dist/**/*"
+    "dist/**"
   ],
   "scripts": {
     "clean": "rm -rf build",
