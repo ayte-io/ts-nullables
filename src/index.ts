@@ -4,7 +4,6 @@ type Absent = undefined | null;
 type Materialized<T> = NonNullable<T>;
 type Indeterminate<T> = Materialized<T> | Absent;
 type throws = never;
-type Nullable<T> = T | null;
 
 type PresentOrElse<T, E> = Materialized<T> | E;
 type PresentOrNull<T> = PresentOrElse<T, null>;
@@ -156,6 +155,16 @@ namespace Nullables {
         throw isPresent(factory) ? factory() : new Error('Absent value passed');
     }
 
+    /**
+     * A helper function to throw in case argument is absent.
+     *
+     * @param value Argument value.
+     * @param name Argument name.
+     */
+    export function requireArgument<T>(value: Indeterminate<T>, name: string): Materialized<T> | throws {
+        return orElseThrow(value, () => new Error(`Argument ${name} contains absent value`));
+    }
+
     export function first<T extends Absent>(...values: Array<T>): T;
     export function first<T>(...values: Array<Materialized<T>>) : PresentOrNull<T>;
     /**
@@ -214,8 +223,8 @@ namespace Nullables {
         });
     }
 
-    export function map(value: Absent, transformer: () => void): null;
-    export function map<T, V>(value: Materialized<T>, transformer: (value: Materialized<T>) => V): V;
+    export function map<U>(value: Absent, transformer: () => void, fallback?: U): PresentOrNull<U>;
+    export function map<T, V, U>(value: Materialized<T>, transformer: (value: Materialized<T>) => V, fallback?: Indeterminate<U>): PresentOrNull<V>;
     /**
      * If value is not absent, calls transformer on that value and
      * returns result, otherwise returns null.
@@ -223,9 +232,14 @@ namespace Nullables {
      * @param value Possibly absent value.
      * @param transformer Transformer function to call on present value.
      */
-    export function map<T, V>(value: Indeterminate<T>, transformer: (value: Materialized<T>) => V): Nullable<V>;
-    export function map<T, V>(value: Indeterminate<T>, transformer: (value: Materialized<T>) => V): Nullable<V> {
-        return isPresent(value) ? transformer(value) : null;
+    export function map<T, V>(value: Indeterminate<T>, transformer: (value: Materialized<T>) => V): PresentOrNull<V>;
+    export function map<T, V, U = V>(value: Indeterminate<T>, transformer: (value: Materialized<T>) => V, fallback?: Indeterminate<U>): V | PresentOrNull<U>;
+    export function map<T, V, U = V>(value: Indeterminate<T>, transformer: (value: Materialized<T>) => V, fallback?: Indeterminate<U>): V | PresentOrNull<U> {
+        if (isPresent(value)) {
+            return transformer(value);
+        }
+
+        return orElseNull(fallback);
     }
 
     /**
